@@ -3,62 +3,64 @@ package com.example.navigation
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
+import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.navigation.findNavController
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
-import com.example.navigation.databinding.ActivityMainBinding
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.layout_drawer.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
 
-    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navController: NavController
 
-    private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
 
     @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding =
-            DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
-        drawerLayout = binding.drawerLayout
-        val navController = this.findNavController(R.id.myNavHostFragment)
+
+        setupNavigation()
+        setEvents()
+    }
+
+    private fun setEvents() {
+        drawer_top_page.setOnClickListener(this)
+        drawer_user_info.setOnClickListener(this)
+        drawer_push_notification.setOnClickListener(this)
+    }
+
+    private fun setupNavigation() {
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
+        navController = Navigation.findNavController(this, R.id.myNavHostFragment)
         NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout)
+        NavigationUI.setupWithNavController(navView, navController)
 
-        NavigationUI.setupWithNavController(binding.navView, navController)
-
-//        actionBarDrawerToggle = ActionBarDrawerToggle(this, drawerLayout,
-//            R.drawable.ic_launcher_background,
-//            R.drawable.ic_launcher_background)
-//        drawerLayout.addDrawerListener(actionBarDrawerToggle)
-//        actionBarDrawerToggle.syncState()
-//
-//        drawerLayout.addDrawerListener(object:DrawerLayout.DrawerListener{
-//            override fun onDrawerStateChanged(newState: Int) {
-//                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//            }
-//
-//            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-//                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//            }
-//
-//            override fun onDrawerClosed(drawerView: View) {
-//                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//            }
-//
-//            override fun onDrawerOpened(drawerView: View) {
-//                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//            }
-//
-//        })
-
+        drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            @Suppress("DEPRECATION")
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                drawerLayout.setScrimColor(resources.getColor(android.R.color.transparent))
+                content.translationX = drawerView.width * slideOffset
+            }
+        })
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = this.findNavController(R.id.myNavHostFragment)
         return NavigationUI.navigateUp(navController, drawerLayout)
+    }
+
+    override fun onClick(p0: View?) {
+        drawerLayout.closeDrawer(GravityCompat.START)
+        when (p0?.id) {
+            R.id.drawer_top_page -> navController.navigate(R.id.AFragment)
+            R.id.drawer_user_info -> navController.navigate(R.id.BFragment)
+            R.id.drawer_push_notification -> navController.navigate(R.id.CFragment)
+        }
     }
 }
